@@ -26,7 +26,7 @@ public class AgentCoordinateur extends Agent {
     protected void live() {
         long start = System.currentTimeMillis();
 
-        while (System.currentTimeMillis() - start < 25000) {
+        while (System.currentTimeMillis() - start < 70000) {
             Message message = waitNextMessage(1000);
 
             if (!(message instanceof SMAFireMessage fireMessage)) {
@@ -38,8 +38,8 @@ public class AgentCoordinateur extends Agent {
             if (content instanceof AlerteIncendie alerte) {
                 currentZone = alerte.getZone();
                 System.out.println("[AgentCoordinateur] Alerte recue. Demande de confirmation au drone.");
-                notifyInterface("Alerte reçue depuis AgentCapteur.");
-                notifyInterface("Demande de confirmation envoyée au drone.");
+                notifyInterface("Alerte recue depuis AgentCapteur pour Zone " + alerte.getZone().getId());
+                notifyInterface("Demande de confirmation envoyee a AgentDrone.");
 
 
                 sendMessage(
@@ -52,7 +52,8 @@ public class AgentCoordinateur extends Agent {
 
             if (content instanceof ConfirmationIncendie confirmation && confirmation.isIncendieConfirme()) {
                 System.out.println("[AgentCoordinateur] Incendie confirme. Demande des donnees meteo.");
-                notifyInterface("Incendie confirmé par AgentDrone.");
+                notifyInterface("Incendie confirme par AgentDrone pour Zone " + confirmation.getZone().getId());
+                notifyInterface("Demande des donnees meteo envoyee a AgentMeteo.");
 
 
                 sendMessage(
@@ -66,7 +67,8 @@ public class AgentCoordinateur extends Agent {
             if (content instanceof DonneesMeteo meteo) {
                 currentMeteo = meteo;
                 System.out.println("[AgentCoordinateur] Donnees meteo recues. Demande analyse propagation.");
-                notifyInterface("Données météo reçues.");
+                notifyInterface("Donnees meteo recues : vent=" + meteo.getVent() + ", humidite=" + meteo.getHumidite() + "%");
+                notifyInterface("Demande d'analyse envoyee a AgentPropagation.");
 
                 sendMessage(
                         AGRConfig.COMMUNITY,
@@ -80,8 +82,17 @@ public class AgentCoordinateur extends Agent {
             if (content instanceof RisquePropagation risque) {
                 System.out.println("[AgentCoordinateur] Priorite " + risque.getNiveau()
                         + ". Envoi pompiers + evacuation si necessaire.");
-                notifyInterface("Ordre d’intervention envoyé aux pompiers.");
-                notifyInterface("Ordre d’évacuation envoyé.");
+                notifyInterface("Risque calcule pour Zone " + risque.getZone().getId()
+                        + " : " + risque.getNiveau()
+                        + " | Score=" + Math.round(risque.getScore() * 100));
+
+                notifyInterface("Ordre d'intervention envoye a AgentPompier pour Zone " + risque.getZone().getId());
+
+                if (risque.getZone().isProcheHabitations()) {
+                    notifyInterface("Ordre d'evacuation envoye a AgentEvacuation.");
+                } else {
+                    notifyInterface("Pas d'evacuation necessaire pour cette zone.");
+                }
 
                 OrdreIntervention ordre = new OrdreIntervention(
                         risque.getZone(),
@@ -109,7 +120,6 @@ public class AgentCoordinateur extends Agent {
                         new SMAFireMessage(ordre)
                 );
 
-                return;
             }
         }
 

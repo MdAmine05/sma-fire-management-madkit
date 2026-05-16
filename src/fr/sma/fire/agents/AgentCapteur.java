@@ -14,7 +14,7 @@ public class AgentCapteur extends Agent {
         createGroup(AGRConfig.COMMUNITY, AGRConfig.GROUPE_SURVEILLANCE);
         requestRole(AGRConfig.COMMUNITY, AGRConfig.GROUPE_SURVEILLANCE, AGRConfig.ROLE_DETECTEUR);
 
-        // Technical MadKit adaptation: sender joins target group to send role-based messages.
+        // Technical MadKit adaptation: allows sending alerts to coordination roles.
         requestRole(AGRConfig.COMMUNITY, AGRConfig.GROUPE_COORDINATION, AGRConfig.ROLE_DETECTEUR);
 
         System.out.println("[AgentCapteur] Role Detecteur joined.");
@@ -22,23 +22,60 @@ public class AgentCapteur extends Agent {
 
     @Override
     protected void live() {
-        pause(2000);
+        ZoneForet[] observations = {
+                new ZoneForet(1, 42.0, false, false),
+                new ZoneForet(3, 78.0, true, true),
+                new ZoneForet(5, 66.0, true, false),
+                new ZoneForet(2, 88.0, true, true)
+        };
 
-        ZoneForet zone = new ZoneForet(3, 78.0, true, true);
+        for (ZoneForet zone : observations) {
+            pause(10000);
 
-        if (zone.getTemperature() > 60 && zone.isFumee()) {
-            System.out.println("[AgentCapteur] Zone 3 : temperature=78°C, fumee=true -> ALERTE envoyee");
+            System.out.println("[AgentCapteur] Nouvelle observation : " + zone);
 
-            AlerteIncendie alerte = new AlerteIncendie(zone, "AgentCapteur");
-
-            ReturnCode result = sendMessage(
+            sendMessage(
                     AGRConfig.COMMUNITY,
                     AGRConfig.GROUPE_COORDINATION,
-                    AGRConfig.ROLE_COORDINATEUR,
-                    new SMAFireMessage(alerte)
+                    "InterfaceObserver",
+                    new SMAFireMessage("Nouvelle observation capteur : " + zone)
             );
 
-            System.out.println("[AgentCapteur] Resultat envoi MadKit = " + result);
+            if (zone.getTemperature() > 60 && zone.isFumee()) {
+                System.out.println("[AgentCapteur] Zone " + zone.getId()
+                        + " : temperature=" + zone.getTemperature()
+                        + "°C, fumee=true -> ALERTE envoyee");
+
+                sendMessage(
+                        AGRConfig.COMMUNITY,
+                        AGRConfig.GROUPE_COORDINATION,
+                        "InterfaceObserver",
+                        new SMAFireMessage("ALERTE : Zone " + zone.getId()
+                                + " | temperature=" + zone.getTemperature()
+                                + "°C | fumee=true")
+                );
+
+                AlerteIncendie alerte = new AlerteIncendie(zone, "AgentCapteur");
+
+                ReturnCode result = sendMessage(
+                        AGRConfig.COMMUNITY,
+                        AGRConfig.GROUPE_COORDINATION,
+                        AGRConfig.ROLE_COORDINATEUR,
+                        new SMAFireMessage(alerte)
+                );
+
+                System.out.println("[AgentCapteur] Resultat envoi MadKit = " + result);
+            } else {
+                System.out.println("[AgentCapteur] Zone " + zone.getId()
+                        + " : situation normale, aucune alerte.");
+
+                sendMessage(
+                        AGRConfig.COMMUNITY,
+                        AGRConfig.GROUPE_COORDINATION,
+                        "InterfaceObserver",
+                        new SMAFireMessage("Zone " + zone.getId() + " normale : aucune alerte.")
+                );
+            }
         }
     }
 }

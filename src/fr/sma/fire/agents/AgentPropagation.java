@@ -21,26 +21,32 @@ public class AgentPropagation extends Agent {
 
     @Override
     protected void live() {
-        Message message = waitNextMessage(15000);
+        long start = System.currentTimeMillis();
 
-        if (message instanceof SMAFireMessage fireMessage &&
-                fireMessage.getContent() instanceof Object[] data) {
+        while (System.currentTimeMillis() - start < 70000) {
+            Message message = waitNextMessage(1000);
 
-            ZoneForet zone = (ZoneForet) data[0];
-            DonneesMeteo meteo = (DonneesMeteo) data[1];
+            if (message instanceof SMAFireMessage fireMessage &&
+                    fireMessage.getContent() instanceof Object[] data) {
 
-            RiskCalculator calculator = new RiskCalculator();
-            double score = calculator.calculateScore(zone, meteo, 0, 10);
-            String niveau = calculator.getRiskLevel(score);
+                ZoneForet zone = (ZoneForet) data[0];
+                DonneesMeteo meteo = (DonneesMeteo) data[1];
 
-            System.out.println("[AgentPropagation] ScoreRisque=" + Math.round(score * 100) + " -> Niveau " + niveau);
+                RiskCalculator calculator = new RiskCalculator();
+                double score = calculator.calculateScore(zone, meteo, 0, 10);
+                String niveau = calculator.getRiskLevel(score);
 
-            sendMessage(
-                    AGRConfig.COMMUNITY,
-                    AGRConfig.GROUPE_COORDINATION,
-                    AGRConfig.ROLE_COORDINATEUR,
-                    new SMAFireMessage(new RisquePropagation(zone, score, niveau))
-            );
+                System.out.println("[AgentPropagation] Zone " + zone.getId()
+                        + " ScoreRisque=" + Math.round(score * 100)
+                        + " -> Niveau " + niveau);
+
+                sendMessage(
+                        AGRConfig.COMMUNITY,
+                        AGRConfig.GROUPE_COORDINATION,
+                        AGRConfig.ROLE_COORDINATEUR,
+                        new SMAFireMessage(new RisquePropagation(zone, score, niveau))
+                );
+            }
         }
     }
 }

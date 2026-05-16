@@ -20,19 +20,25 @@ public class AgentMeteo extends Agent {
 
     @Override
     protected void live() {
-        Message message = waitNextMessage(15000);
+        long start = System.currentTimeMillis();
 
-        if (message instanceof SMAFireMessage) {
-            DonneesMeteo meteo = new DonneesMeteo("FORT", 20.0);
+        while (System.currentTimeMillis() - start < 70000) {
+            Message message = waitNextMessage(1000);
 
-            System.out.println("[AgentMeteo] Vent=FORT, humidite=20%");
+            if (message instanceof SMAFireMessage fireMessage &&
+                    "REQUEST_METEO".equals(fireMessage.getContent())) {
 
-            sendMessage(
-                    AGRConfig.COMMUNITY,
-                    AGRConfig.GROUPE_COORDINATION,
-                    AGRConfig.ROLE_COORDINATEUR,
-                    new SMAFireMessage(meteo)
-            );
+                DonneesMeteo meteo = new DonneesMeteo("FORT", 20.0);
+
+                System.out.println("[AgentMeteo] Vent=FORT, humidite=20%");
+
+                sendMessage(
+                        AGRConfig.COMMUNITY,
+                        AGRConfig.GROUPE_COORDINATION,
+                        AGRConfig.ROLE_COORDINATEUR,
+                        new SMAFireMessage(meteo)
+                );
+            }
         }
     }
 }

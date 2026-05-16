@@ -15,6 +15,7 @@ public class AgentInterface extends Agent {
     private JLabel statusLabel;
     private JLabel zoneLabel;
     private JLabel riskLabel;
+    private JLabel scoreLabel;
     private JTextArea logArea;
     private JPanel riskIndicator;
 
@@ -32,7 +33,7 @@ public class AgentInterface extends Agent {
     protected void live() {
         long start = System.currentTimeMillis();
 
-        while (System.currentTimeMillis() - start < 30000) {
+        while (System.currentTimeMillis() - start < 90000) {
             Message message = waitNextMessage(1000);
 
             if (!(message instanceof SMAFireMessage fireMessage)) {
@@ -46,29 +47,29 @@ public class AgentInterface extends Agent {
             }
 
             if (content instanceof RisquePropagation risque) {
-                updateFinalState(risque);
+                updateRiskState(risque);
             }
         }
     }
 
     private void createUI() {
         frame = new JFrame("SMA Forest Fire Management — MadKit AGR");
-        frame.setSize(780, 520);
+        frame.setSize(1000, 650);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setLayout(new BorderLayout(10, 10));
+        frame.setLayout(new BorderLayout());
 
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(35, 45, 65));
-        header.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        header.setBorder(BorderFactory.createEmptyBorder(16, 22, 16, 22));
 
         JLabel title = new JLabel("Forest Fire Multi-Agent Simulation");
         title.setForeground(Color.WHITE);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
 
-        JLabel subtitle = new JLabel("MadKit + AALAADIN/AGR — Agent Communication Dashboard");
+        JLabel subtitle = new JLabel("MadKit + AALAADIN/AGR — Live Agent Communication Dashboard");
         subtitle.setForeground(new Color(210, 220, 235));
-        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         JPanel titleBox = new JPanel(new GridLayout(2, 1));
         titleBox.setOpaque(false);
@@ -78,13 +79,18 @@ public class AgentInterface extends Agent {
         header.add(titleBox, BorderLayout.WEST);
         frame.add(header, BorderLayout.NORTH);
 
-        JPanel cards = new JPanel(new GridLayout(1, 4, 12, 12));
-        cards.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
-        cards.setBackground(new Color(245, 247, 250));
+        JPanel main = new JPanel(new BorderLayout(10, 10));
+        main.setBackground(new Color(245, 247, 250));
+        main.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        statusLabel = createCard(cards, "Status", "Waiting");
-        zoneLabel = createCard(cards, "Zone", "-");
+        JPanel cards = new JPanel(new GridLayout(1, 5, 12, 12));
+        cards.setBackground(new Color(245, 247, 250));
+        cards.setPreferredSize(new Dimension(950, 105));
+
+        statusLabel = createCard(cards, "Status", "Monitoring");
+        zoneLabel = createCard(cards, "Current Zone", "-");
         riskLabel = createCard(cards, "Risk Level", "-");
+        scoreLabel = createCard(cards, "Score", "-");
 
         JPanel riskCard = new JPanel(new BorderLayout());
         riskCard.setBackground(Color.WHITE);
@@ -93,8 +99,9 @@ public class AgentInterface extends Agent {
                 BorderFactory.createEmptyBorder(12, 12, 12, 12)
         ));
 
-        JLabel riskTitle = new JLabel("Indicator");
+        JLabel riskTitle = new JLabel("Risk Indicator");
         riskTitle.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        riskTitle.setForeground(new Color(90, 100, 115));
 
         riskIndicator = new JPanel();
         riskIndicator.setBackground(Color.LIGHT_GRAY);
@@ -103,7 +110,7 @@ public class AgentInterface extends Agent {
         riskCard.add(riskIndicator, BorderLayout.CENTER);
         cards.add(riskCard);
 
-        frame.add(cards, BorderLayout.CENTER);
+        main.add(cards, BorderLayout.NORTH);
 
         logArea = new JTextArea();
         logArea.setEditable(false);
@@ -111,17 +118,15 @@ public class AgentInterface extends Agent {
         logArea.setBackground(new Color(25, 30, 40));
         logArea.setForeground(new Color(230, 235, 240));
         logArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        logArea.setLineWrap(true);
+        logArea.setWrapStyleWord(true);
 
         JScrollPane scrollPane = new JScrollPane(logArea);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Agent Timeline"));
 
-        JPanel bottom = new JPanel(new BorderLayout());
-        bottom.setBorder(BorderFactory.createEmptyBorder(5, 15, 15, 15));
-        bottom.setBackground(new Color(245, 247, 250));
-        bottom.add(scrollPane, BorderLayout.CENTER);
+        main.add(scrollPane, BorderLayout.CENTER);
 
-        frame.add(bottom, BorderLayout.SOUTH);
-
+        frame.add(main, BorderLayout.CENTER);
         frame.setVisible(true);
 
         addLog("Dashboard initialized. Waiting for agent messages...");
@@ -140,7 +145,7 @@ public class AgentInterface extends Agent {
         titleLabel.setForeground(new Color(90, 100, 115));
 
         JLabel valueLabel = new JLabel(value);
-        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
         valueLabel.setForeground(new Color(35, 45, 65));
 
         card.add(titleLabel);
@@ -159,11 +164,12 @@ public class AgentInterface extends Agent {
         });
     }
 
-    private void updateFinalState(RisquePropagation risque) {
+    private void updateRiskState(RisquePropagation risque) {
         SwingUtilities.invokeLater(() -> {
-            statusLabel.setText("Intervention");
+            statusLabel.setText("Handling Alert");
             zoneLabel.setText("Zone " + risque.getZone().getId());
             riskLabel.setText(risque.getNiveau());
+            scoreLabel.setText(String.valueOf(Math.round(risque.getScore() * 100)));
 
             if ("CRITIQUE".equalsIgnoreCase(risque.getNiveau())) {
                 riskIndicator.setBackground(new Color(200, 45, 45));
@@ -175,7 +181,7 @@ public class AgentInterface extends Agent {
                 riskIndicator.setBackground(new Color(80, 170, 100));
             }
 
-            addLog("GLOBAL STATE: INTERVENTION EN COURS — Zone "
+            addLog("GLOBAL STATE: Zone "
                     + risque.getZone().getId()
                     + " | Risque=" + risque.getNiveau()
                     + " | Score=" + Math.round(risque.getScore() * 100));

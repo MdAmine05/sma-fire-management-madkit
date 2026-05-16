@@ -8,6 +8,8 @@ import madkit.kernel.Message;
 
 public class AgentPompier extends Agent {
 
+    private boolean available = true;
+
     @Override
     protected void activate() {
         createGroup(AGRConfig.COMMUNITY, AGRConfig.GROUPE_INTERVENTION);
@@ -15,18 +17,40 @@ public class AgentPompier extends Agent {
 
         requestRole(AGRConfig.COMMUNITY, AGRConfig.GROUPE_COORDINATION, AGRConfig.ROLE_INTERVENANT);
 
-        System.out.println("[AgentPompier] Role Intervenant joined.");
+        System.out.println("[AgentPompier] Role Intervenant joined. Etat=AVAILABLE");
     }
 
     @Override
     protected void live() {
-        Message message = waitNextMessage(20000);
+        long start = System.currentTimeMillis();
 
-        if (message instanceof SMAFireMessage fireMessage &&
-                fireMessage.getContent() instanceof OrdreIntervention ordre) {
+        while (System.currentTimeMillis() - start < 60000) {
+            Message message = waitNextMessage(1000);
 
-            System.out.println("[AgentPompier] Intervention lancee sur Zone " + ordre.getZone().getId()
-                    + " avec priorite " + ordre.getNiveauPriorite());
+            if (message instanceof SMAFireMessage fireMessage &&
+                    fireMessage.getContent() instanceof OrdreIntervention ordre) {
+
+                if (!available) {
+                    System.out.println("[AgentPompier] Indisponible. Intervention Zone "
+                            + ordre.getZone().getId() + " mise en attente.");
+                    continue;
+                }
+
+                available = false;
+
+                System.out.println("[AgentPompier] Intervention lancee sur Zone "
+                        + ordre.getZone().getId()
+                        + " avec priorite " + ordre.getNiveauPriorite()
+                        + ". Etat=BUSY");
+
+                pause(8000);
+
+                available = true;
+
+                System.out.println("[AgentPompier] Intervention terminee sur Zone "
+                        + ordre.getZone().getId()
+                        + ". Etat=AVAILABLE");
+            }
         }
     }
 }

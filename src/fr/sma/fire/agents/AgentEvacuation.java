@@ -20,13 +20,24 @@ public class AgentEvacuation extends Agent {
 
     @Override
     protected void live() {
-        Message message = waitNextMessage(20000);
+        long start = System.currentTimeMillis();
 
-        if (message instanceof SMAFireMessage fireMessage &&
-                fireMessage.getContent() instanceof OrdreIntervention ordre &&
-                ordre.isEvacuationNecessaire()) {
+        while (System.currentTimeMillis() - start < 70000) {
+            Message message = waitNextMessage(1000);
 
-            System.out.println("[AgentEvacuation] Alerte civile declenchee. Habitations proches evacuees.");
+            if (message instanceof SMAFireMessage fireMessage &&
+                    fireMessage.getContent() instanceof OrdreIntervention ordre) {
+
+                if (ordre.isEvacuationNecessaire()) {
+                    System.out.println("[AgentEvacuation] Alerte civile declenchee pour Zone "
+                            + ordre.getZone().getId()
+                            + ". Habitations proches evacuees.");
+                } else {
+                    System.out.println("[AgentEvacuation] Zone "
+                            + ordre.getZone().getId()
+                            + " : evacuation non necessaire.");
+                }
+            }
         }
     }
 }

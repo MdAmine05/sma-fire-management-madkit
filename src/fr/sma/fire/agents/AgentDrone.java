@@ -21,19 +21,24 @@ public class AgentDrone extends Agent {
 
     @Override
     protected void live() {
-        Message message = waitNextMessage(15000);
+        long start = System.currentTimeMillis();
 
-        if (message instanceof SMAFireMessage fireMessage &&
-                fireMessage.getContent() instanceof AlerteIncendie alerte) {
+        while (System.currentTimeMillis() - start < 70000) {
+            Message message = waitNextMessage(1000);
 
-            System.out.println("[AgentDrone] Zone " + alerte.getZone().getId() + " inspectee -> Incendie CONFIRME.");
+            if (message instanceof SMAFireMessage fireMessage &&
+                    fireMessage.getContent() instanceof AlerteIncendie alerte) {
 
-            sendMessage(
-                    AGRConfig.COMMUNITY,
-                    AGRConfig.GROUPE_COORDINATION,
-                    AGRConfig.ROLE_COORDINATEUR,
-                    new SMAFireMessage(new ConfirmationIncendie(alerte.getZone(), true))
-            );
+                System.out.println("[AgentDrone] Zone " + alerte.getZone().getId()
+                        + " inspectee -> Incendie CONFIRME.");
+
+                sendMessage(
+                        AGRConfig.COMMUNITY,
+                        AGRConfig.GROUPE_COORDINATION,
+                        AGRConfig.ROLE_COORDINATEUR,
+                        new SMAFireMessage(new ConfirmationIncendie(alerte.getZone(), true))
+                );
+            }
         }
     }
 }
