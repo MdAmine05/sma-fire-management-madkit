@@ -1,0 +1,32 @@
+package fr.sma.fire.agents;
+
+import fr.sma.fire.config.AGRConfig;
+import fr.sma.fire.messages.OrdreIntervention;
+import fr.sma.fire.messages.SMAFireMessage;
+import madkit.kernel.Agent;
+import madkit.kernel.Message;
+
+public class AgentEvacuation extends Agent {
+
+    @Override
+    protected void activate() {
+        createGroup(AGRConfig.COMMUNITY, AGRConfig.GROUPE_SECURITE);
+        requestRole(AGRConfig.COMMUNITY, AGRConfig.GROUPE_SECURITE, AGRConfig.ROLE_RESPONSABLE_EVACUATION);
+
+        requestRole(AGRConfig.COMMUNITY, AGRConfig.GROUPE_COORDINATION, AGRConfig.ROLE_RESPONSABLE_EVACUATION);
+
+        System.out.println("[AgentEvacuation] Role ResponsableEvacuation joined.");
+    }
+
+    @Override
+    protected void live() {
+        Message message = waitNextMessage(20000);
+
+        if (message instanceof SMAFireMessage fireMessage &&
+                fireMessage.getContent() instanceof OrdreIntervention ordre &&
+                ordre.isEvacuationNecessaire()) {
+
+            System.out.println("[AgentEvacuation] Alerte civile declenchee. Habitations proches evacuees.");
+        }
+    }
+}

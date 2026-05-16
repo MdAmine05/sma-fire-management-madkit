@@ -25,4 +25,30 @@ The system simulates the detection and management of a forest fire using several
   - GroupeSecurite
 
 ## Current Status
-Step 1: project setup.
+
+### Step 1: Project setup
+Done:
+- Java project created with IntelliJ.
+- Package structure created.
+- `AGRConfig` contains official AGR names.
+- `ZoneForet` represents a forest zone.
+- `SetupTest` validates the setup.
+
+### Step 2: Message classes
+Done:
+- `AlerteIncendie`
+- `ConfirmationIncendie`
+- `DonneesMeteo`
+- `RisquePropagation`
+- `OrdreIntervention`
+
+These classes represent the communication contract between agents.
+
+## Scenario Flow
+
+1. `AgentCapteur` detects high temperature and smoke.
+2. It sends `AlerteIncendie`.
+3. `AgentDrone` confirms the fire using `ConfirmationIncendie`.
+4. `AgentMeteo` provides `DonneesMeteo`.
+5. `AgentPropagation` calculates `RisquePropagation`.
+6. `AgentCoordinateur` sends `OrdreIntervention`.
