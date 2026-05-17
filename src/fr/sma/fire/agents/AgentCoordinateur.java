@@ -26,7 +26,7 @@ public class AgentCoordinateur extends Agent {
     protected void live() {
         long start = System.currentTimeMillis();
 
-        while (System.currentTimeMillis() - start < 70000) {
+        while (System.currentTimeMillis() - start < 120000) {
             Message message = waitNextMessage(1000);
 
             if (!(message instanceof SMAFireMessage fireMessage)) {
@@ -37,6 +37,9 @@ public class AgentCoordinateur extends Agent {
 
             if (content instanceof AlerteIncendie alerte) {
                 currentZone = alerte.getZone();
+                System.out.println("\n" + "=".repeat(60));
+                System.out.println("[AgentCoordinateur] === NOUVEAU SCENARIO — Zone " + alerte.getZone().getId() + " ===");
+                System.out.println("=".repeat(60));
                 System.out.println("[AgentCoordinateur] Alerte recue. Demande de confirmation au drone.");
                 notifyInterface("Alerte recue depuis AgentCapteur pour Zone " + alerte.getZone().getId());
                 notifyInterface("Demande de confirmation envoyee a AgentDrone.");
@@ -48,6 +51,13 @@ public class AgentCoordinateur extends Agent {
                         AGRConfig.ROLE_OBSERVATEUR,
                         new SMAFireMessage(alerte)
                 );
+            }
+
+            if (content instanceof ConfirmationIncendie confirmation && !confirmation.isIncendieConfirme()) {
+                System.out.println("[AgentCoordinateur] Fausse alerte confirmee par drone pour Zone "
+                        + confirmation.getZone().getId() + ". Retour surveillance.");
+                notifyInterface("Fausse alerte — Zone " + confirmation.getZone().getId()
+                        + " : annulation, retour surveillance.");
             }
 
             if (content instanceof ConfirmationIncendie confirmation && confirmation.isIncendieConfirme()) {
@@ -102,7 +112,7 @@ public class AgentCoordinateur extends Agent {
                 sendMessage(
                         AGRConfig.COMMUNITY,
                         AGRConfig.GROUPE_COORDINATION,
-                        "InterfaceObserver",
+                        AGRConfig.ROLE_INTERFACE_OBSERVER,
                         new SMAFireMessage(risque)
                 );
 
@@ -123,13 +133,13 @@ public class AgentCoordinateur extends Agent {
             }
         }
 
-        System.out.println("[AgentCoordinateur] Simulation terminee sans scenario complet.");
+        System.out.println("[AgentCoordinateur] Simulation terminee.");
     }
     private void notifyInterface(String text) {
         sendMessage(
                 AGRConfig.COMMUNITY,
                 AGRConfig.GROUPE_COORDINATION,
-                "InterfaceObserver",
+                AGRConfig.ROLE_INTERFACE_OBSERVER,
                 new SMAFireMessage(text)
         );
     }

@@ -22,4 +22,6 @@ public final class AGRConfig {
     public static final String ROLE_GUIDE = "Guide";
     public static final String ROLE_RESPONSABLE_EVACUATION = "ResponsableEvacuation";
     public static final String ROLE_SUPERVISEUR = "Superviseur";
+
+    public static final String ROLE_INTERFACE_OBSERVER = "InterfaceObserver";
 }

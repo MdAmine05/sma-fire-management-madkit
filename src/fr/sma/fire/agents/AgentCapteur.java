@@ -37,7 +37,7 @@ public class AgentCapteur extends Agent {
             sendMessage(
                     AGRConfig.COMMUNITY,
                     AGRConfig.GROUPE_COORDINATION,
-                    "InterfaceObserver",
+                    AGRConfig.ROLE_INTERFACE_OBSERVER,
                     new SMAFireMessage("Nouvelle observation capteur : " + zone)
             );
 
@@ -49,7 +49,7 @@ public class AgentCapteur extends Agent {
                 sendMessage(
                         AGRConfig.COMMUNITY,
                         AGRConfig.GROUPE_COORDINATION,
-                        "InterfaceObserver",
+                        AGRConfig.ROLE_INTERFACE_OBSERVER,
                         new SMAFireMessage("ALERTE : Zone " + zone.getId()
                                 + " | temperature=" + zone.getTemperature()
                                 + "°C | fumee=true")
@@ -72,7 +72,7 @@ public class AgentCapteur extends Agent {
                 sendMessage(
                         AGRConfig.COMMUNITY,
                         AGRConfig.GROUPE_COORDINATION,
-                        "InterfaceObserver",
+                        AGRConfig.ROLE_INTERFACE_OBSERVER,
                         new SMAFireMessage("Zone " + zone.getId() + " normale : aucune alerte.")
                 );
             }

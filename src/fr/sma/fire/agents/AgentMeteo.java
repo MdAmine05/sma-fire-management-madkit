@@ -22,7 +22,7 @@ public class AgentMeteo extends Agent {
     protected void live() {
         long start = System.currentTimeMillis();
 
-        while (System.currentTimeMillis() - start < 70000) {
+        while (System.currentTimeMillis() - start < 120000) {
             Message message = waitNextMessage(1000);
 
             if (message instanceof SMAFireMessage fireMessage &&

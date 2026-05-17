@@ -24,7 +24,7 @@ public class AgentPompier extends Agent {
     protected void live() {
         long start = System.currentTimeMillis();
 
-        while (System.currentTimeMillis() - start < 60000) {
+        while (System.currentTimeMillis() - start < 120000) {
             Message message = waitNextMessage(1000);
 
             if (message instanceof SMAFireMessage fireMessage &&
