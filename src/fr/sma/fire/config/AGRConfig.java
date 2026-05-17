@@ -19,7 +19,6 @@ public final class AGRConfig {
     public static final String ROLE_ANALYSTE_RISQUE = "AnalysteRisque";
     public static final String ROLE_COORDINATEUR = "Coordinateur";
     public static final String ROLE_INTERVENANT = "Intervenant";
-    public static final String ROLE_GUIDE = "Guide";
     public static final String ROLE_RESPONSABLE_EVACUATION = "ResponsableEvacuation";
     public static final String ROLE_SUPERVISEUR = "Superviseur";
 
